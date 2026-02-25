@@ -13,8 +13,9 @@ public class Usuario {
     }
 
     //Pega o email e determina como deve ser:
-    public String getEmail() {return email;}
-    public String setEmail(String formato) {
+    public String getEmail() {return
+            matricula + "@intelbras.com.br";}
+    public String setEmail() {
         return String.format("%s" + "@intelbras.com.br", matricula);
     }
 }
