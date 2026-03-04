@@ -1,4 +1,5 @@
-import java.time.LocalDate;
+import Enums.EmailStatus;
+
 import java.time.LocalDateTime;
 
 public class Email {

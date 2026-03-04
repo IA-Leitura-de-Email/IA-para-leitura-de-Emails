@@ -1,3 +1,5 @@
+package Enums;
+
 public enum EmailStatus {
     RECEBIDO,
     PROCESSANDO,
