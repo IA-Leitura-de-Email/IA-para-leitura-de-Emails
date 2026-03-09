@@ -6,7 +6,9 @@ import google.generativeai as genai #
 # CONFIGURAÇÕES
 # ==============================
 
-API_KEY = "AIzaSyBrtPNH8MVRRsidZ6pEqBtY0l9JkzA3m2E" # Chave do Google AI Studio 
+from dotenev import load_dotenv
+load_dotenv()
+API_KEY = os.getenv # Chave do Google AI Studio 
 
 # Configurando a chave na biblioteca do Gemini
 genai.configure(api_key=API_KEY)
