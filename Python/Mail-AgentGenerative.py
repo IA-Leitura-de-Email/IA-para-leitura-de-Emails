@@ -17,11 +17,8 @@ genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel('gemini-flash-lite-latest')
 
 # Caminho ao diretorio, para a fonte de dados.
-PASTA_DOCUMENTOS = os.path.join(
-    os.path.expanduser("~"),
-    "Documents",
-    "base_conhecimento"
-)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PASTA_DOCUMENTOS = os.path.join(BASE_DIR, "base_conhecimento")
 
 # ==============================
 # FUNÇÃO PARA LER UM PDF
