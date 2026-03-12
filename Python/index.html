@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Suporte Intelbras IA</title>
+    <style>
+        body { font-family: Arial; max-width: 900px; margin: 50px auto; text-align: center; padding: 0 20px;}
+        textarea { width: 100%; height: 100px; border-radius: 8px; padding: 10px; }
+        button { background: #00a115; color: white; padding: 10px 20px; border: none; cursor: pointer; margin-top: 10px; }
+        #resposta { margin-top: 30px; padding: 20px; background: #f0f0f0; min-height: 80px; white-space: pre-wrap;width: 100%; box-sizing: border-box; text-align: left; border-left: 6px solid #00a115;  border-radius: 4px; font-size: 14px; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <h2>Agente de E-mail Intelbras</h2>
+    <textarea id="emailInput" placeholder="Cole o e-mail aqui..."></textarea>
+    <button onclick="enviarParaPython()">Gerar Resposta IA</button>
+    <div id="resposta">A resposta aparecerá aqui...</div>
+
+    <script>
+        async function enviarParaPython() {
+            const email = document.getElementById('emailInput').value;
+            const divResposta = document.getElementById('resposta');
+            divResposta.innerText = "Consultando base na RAM...";
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/perguntar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+                const data = await response.json();
+                divResposta.innerText = data.resposta || "Erro: " + data.erro;
+            } catch (err) {
+                divResposta.innerText = "Erro: Servidor Python não está rodando.";
+            }
+        }
+    </script>
+</body>
+</html>
