@@ -1,130 +1,88 @@
 import os
 import PyPDF2
-import google.generativeai as genai # 
+import google.generativeai as genai
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app) # Permite que seu HTML/JS acesse esta API
 
 # ==============================
 # CONFIGURAÇÕES
 # ==============================
-
 from dotenev import load_dotenv
 load_dotenv()
 API_KEY = os.getenv # Chave do Google AI Studio 
-
-# Configurando a chave na biblioteca do Gemini
 genai.configure(api_key=API_KEY)
+model = genai.GenerativeModel('gemini-3.1-flash-lite-preview')
 
-# Modelo - Generativo
-model = genai.GenerativeModel('gemini-flash-lite-latest')
-
-# Caminho ao diretorio, para a fonte de dados.
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PASTA_DOCUMENTOS = os.path.join(BASE_DIR, "base_conhecimento")
+PASTA_DOCUMENTOS = os.path.join(os.path.expanduser("~"), "Documents", "base_conhecimento")
 
 # ==============================
-# FUNÇÃO PARA LER UM PDF
+# FUNÇÕES DE APOIO
 # ==============================
-
 def ler_pdf(caminho_pdf):
     texto = ""
-    with open(caminho_pdf, "rb") as arquivo:
-        leitor = PyPDF2.PdfReader(arquivo)
-        for pagina in leitor.pages:
-            conteudo = pagina.extract_text()
-            if conteudo:
-                texto += conteudo + "\n"
+    try:
+        with open(caminho_pdf, "rb") as arquivo:
+            leitor = PyPDF2.PdfReader(arquivo)
+            for pagina in leitor.pages:
+                conteudo = pagina.extract_text()
+                if conteudo: texto += conteudo + "\n"
+    except Exception as e:
+        print(f"Erro ao ler PDF: {e}")
     return texto
 
-# ==============================
-# FUNÇÃO PARA LER TODOS OS PDFs
-# ==============================
-
 def carregar_documentos(pasta):
-    base_conhecimento = ""
-    print("\nCarregando documentos da empresa...\n")
-    
-    # Verifica se a pasta existe para evitar erros
+    base = ""
     if not os.path.exists(pasta):
-        print(f"ERRO: A pasta {pasta} não foi encontrada. Crie a pasta e coloque seus PDFs nela.")
         return ""
-
-    for arquivo in os.listdir(pasta):
+    for arquivo in os.listdir(pasta): 
         if arquivo.lower().endswith(".pdf"):
-            caminho_pdf = os.path.join(pasta, arquivo)
-            print(f"Lendo arquivo: {arquivo}")
-            texto_pdf = ler_pdf(caminho_pdf)
-            base_conhecimento += f"\nDOCUMENTO: {arquivo}\n"
-            base_conhecimento += texto_pdf
-            base_conhecimento += "\n\n"
+            caminho_pdf = os.path.join(pasta, arquivo) 
+            base += f"\nDOCUMENTO: {arquivo}\n" 
+            base += ler_pdf(caminho_pdf) 
+            base += "\n"
+    return base
 
-    return base_conhecimento
 
-# ==============================
-# CARREGAR BASE DE CONHECIMENTO
-# ==============================
-
-base_conhecimento = carregar_documentos(PASTA_DOCUMENTOS)
-
-if not base_conhecimento:
-    print("Nenhum texto foi carregado. Encerrando o programa.")
-    exit()
+# Carrega a base UMA VEZ ao iniciar o servidor
+BASE_CONHECIMENTO = carregar_documentos(PASTA_DOCUMENTOS)
 
 # ==============================
-# ENTRADA DO EMAIL DO CLIENTE
+# ROTA DA API
 # ==============================
+@app.route('/perguntar', methods=['POST'])
+def perguntar():
+    dados = request.json
+    email_cliente = dados.get('email', '')
 
-print("\n==============================")
-print(" SISTEMA DE RESPOSTA DE EMAIL ")
-print("==============================\n")
+    if not BASE_CONHECIMENTO:
+        return jsonify({"erro": "Base de conhecimento vazia ou não encontrada."}), 500
 
-email_cliente = input("Cole o email do cliente abaixo e pressione ENTER:\n\n")
+    prompt = f"""
+    Você é um atendente de suporte da INTELBRAS.
+    Use APENAS as informações da base de conhecimento para responder.
+    Se a resposta não estiver nos documentos, diga que o atendimento humano irá verificar.
 
-# ==============================
-# PROMPT ENVIADO PARA A IA
-# ==============================
+    BASE DE CONHECIMENTO:
+    {BASE_CONHECIMENTO}
 
-prompt = f"""
-Você é um atendente de suporte da INTELBRAS.
+    EMAIL DO CLIENTE:
+    {email_cliente}
 
-Use APENAS as informações da base de conhecimento
-para responder o cliente.
+    REGRAS:
+    - SEMPRE DEIXE O TEXTO EM FORMATO DE DOCUMENTAÇÃO!
+    - FOQUE APENAS NO MENCIONADO PELO CLIENTE!
+    - SEJA BREVE E PROFISSIONAL!
+    """
 
-Se a resposta não estiver nos documentos,
-diga que o atendimento humano irá verificar.
+    try:
+        resposta = model.generate_content(prompt)
+        return jsonify({"resposta": resposta.text})
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
 
-
-BASE DE CONHECIMENTO DA EMPRESA:
-
-{base_conhecimento}
-
-EMAIL DO CLIENTE:
-
-{email_cliente}
-
-SEMPRE DEIXE O TEXTO EM FORMATO DE DOCUMENTAÇÃO!
-SEMPRE SEJA BREVE!
-NÃO SE ESTENDER NA EXPLICAÇÃO!
-Responda o email de forma educada e profissional.
-"""
-
-# ==============================
-# CHAMADA DA IA (GEMINI)
-# ==============================
-
-print("\nGerando resposta... Aguarde.\n")
-
-try:
-    # A chamada para o Gemini acontece aqui
-    resposta = model.generate_content(prompt)
-    texto_resposta = resposta.text
-except Exception as e:
-    texto_resposta = f"Ocorreu um erro ao chamar a API do Gemini: {e}"
-
-# ==============================
-# EXIBIR RESPOSTA
-# ==============================
-
-print("==============================")
-print(" RESPOSTA GERADA PELA IA ")
-print("==============================\n")
-
-print(texto_resposta)
+if __name__ == '__main__':
+    # Roda o servidor na porta 5000
+    app.run(host='0.0.0.0', port=5000, debug=True)
