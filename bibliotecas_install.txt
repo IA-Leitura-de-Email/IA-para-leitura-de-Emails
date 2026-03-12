@@ -1,0 +1,1 @@
+pip install PyPDF2 google-generativeai Flask flask-cors
