@@ -16,7 +16,13 @@ API_KEY = os.getenv("API_KEY") # Chave do Google AI Studio
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel('gemini-3.1-flash-lite-preview')
 
-PASTA_DOCUMENTOS = os.path.join(os.path.expanduser("~"), "Documents", "../Knowledge_base/base_conhecimento")
+#Procura dos arquivos:
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PASTA_DOCUMENTOS = os.path.join(BASE_DIR, "Knowledge_base", "base_conhecimento")
+
+#Se não encontrar a pasta, gera uma mensagem de erro:
+if not os.path.exists(PASTA_DOCUMENTOS):
+    print(f"Pasta não encontrada: {PASTA_DOCUMENTOS}")
 
 # ==============================
 # FUNÇÕES DE APOIO
