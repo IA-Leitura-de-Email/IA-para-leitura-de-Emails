@@ -23,6 +23,7 @@ Automatizar a leitura e interpretação de e-mails para:
 
 * Python
 * PyPDF2
+* Flask
 * Google Generative AI (Gemini)
 * API Key
 * JSON
