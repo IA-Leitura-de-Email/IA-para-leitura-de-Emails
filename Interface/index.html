@@ -1,39 +1,133 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <title>Suporte Intelbras IA</title>
-    <style>
-        body { font-family: Arial; max-width: 900px; margin: 50px auto; text-align: center; padding: 0 20px;}
-        textarea { width: 100%; height: 100px; border-radius: 8px; padding: 10px; }
-        button { background: #00a115; color: white; padding: 10px 20px; border: none; cursor: pointer; margin-top: 10px; }
-        #resposta { margin-top: 30px; padding: 20px; background: #f0f0f0; min-height: 80px; white-space: pre-wrap;width: 100%; box-sizing: border-box; text-align: left; border-left: 6px solid #00a115;  border-radius: 4px; font-size: 14px; line-height: 1.5; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agente IA — Suporte Intelbras</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h2>Agente de E-mail Intelbras</h2>
-    <textarea id="emailInput" placeholder="Cole o e-mail aqui..."></textarea>
-    <button onclick="enviarParaPython()">Gerar Resposta IA</button>
-    <div id="resposta">A resposta aparecerá aqui...</div>
 
-    <script>
-        async function enviarParaPython() {
-            const email = document.getElementById('emailInput').value;
-            const divResposta = document.getElementById('resposta');
-            divResposta.innerText = "Consultando base na RAM...";
+<!-- ─── HEADER ─────────────────────────── -->
+<header>
+    <div class="logo">
+        <span class="logo-wordmark">intelbras</span>
+        <div class="logo-sep"></div>
+        <span class="logo-sub">Agente de Suporte IA</span>
+    </div>
+    <div class="header-right">
+        <div class="status-pill">
+            <div class="status-dot"></div>
+            Servidor ativo
+        </div>
+        <button class="btn-theme" onclick="toggleTheme()" title="Alternar tema claro/escuro">
+            <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+            </svg>
+            <svg id="iconSun" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1"     x2="12" y2="3"/>
+                <line x1="12" y1="21"    x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22"   x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1"  y1="12"    x2="3"  y2="12"/>
+                <line x1="21" y1="12"    x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78"  x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64"  x2="19.78" y2="4.22"/>
+            </svg>
+        </button>
+    </div>
+</header>
 
-            try {
-                const response = await fetch('http://127.0.0.1:5000/perguntar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email })
-                });
-                const data = await response.json();
-                divResposta.innerText = data.resposta || "Erro: " + data.erro;
-            } catch (err) {
-                divResposta.innerText = "Erro: Servidor Python não está rodando.";
-            }
-        }
-    </script>
+<!-- ─── CONTEÚDO PRINCIPAL ──────────────── -->
+<main>
+
+    <!-- PAINEL: E-mail do cliente -->
+    <div class="card">
+        <div class="card-head">
+            <div class="card-label">
+                <div class="label-dot"></div>
+                E-mail do cliente
+            </div>
+            <span class="char-count" id="charCount">0 caracteres</span>
+        </div>
+
+        <textarea
+            id="emailInput"
+            placeholder="Cole aqui o e-mail do cliente...&#10;&#10;Ex: Olá, preciso de ajuda com o cadastro de usuários no MIP-1000 IP..."
+        ></textarea>
+
+        <div class="card-foot">
+            <span class="foot-hint">IA consultará os manuais técnicos Intelbras</span>
+            <button class="btn-send" id="btnGerar" onclick="enviar()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+                Gerar Resposta
+            </button>
+        </div>
+    </div>
+
+    <!-- PAINEL: Resposta da IA -->
+    <div class="card">
+        <div class="card-head">
+            <div class="card-label">
+                <div class="label-dot"></div>
+                Resposta gerada pela IA
+            </div>
+            <div class="actions">
+                <button class="btn-icon" onclick="copiar()" title="Copiar resposta">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2"/>
+                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                    </svg>
+                </button>
+                <button class="btn-icon" onclick="limpar()" title="Limpar tudo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="resp-body" id="respBody">
+            <div class="empty">
+                <div class="empty-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                    </svg>
+                </div>
+                <h3>Nenhuma resposta ainda</h3>
+                <p>Cole o e-mail do cliente ao lado<br>e clique em <strong>Gerar Resposta</strong></p>
+            </div>
+        </div>
+
+        <div class="card-foot">
+            <span class="resp-meta" id="respMeta">—</span>
+            <div class="model-tag">gemini · intelbras kb</div>
+        </div>
+    </div>
+
+</main>
+
+<!-- ─── FOOTER ──────────────────────────── -->
+<footer>
+    <span><span class="brand">intelbras</span> · Suporte Técnico · Uso interno</span>
+    <span id="clock"></span>
+</footer>
+
+<!-- ─── TOAST ───────────────────────────── -->
+<div class="toast" id="toast">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+    </svg>
+    <span id="toastMsg">Copiado!</span>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
