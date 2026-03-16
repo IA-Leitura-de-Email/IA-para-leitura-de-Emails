@@ -1,0 +1,10 @@
+MANUAL PARA RODAR A MAQUINA COMO SERVIDOR.
+
+- No terminal digite "cd Interface"
+- No arquivo app.JS altere a linha : 
+const res  = await fetch('http://127.0.0.1:5000/perguntar' para --->> 
+const res  = await fetch('http://**IP DA MAQUINA**:5000/perguntar'
+- Após isso insira o comando "python -m http.server 8080"
+
+DEPOIS BASTA RODAR O ARQUIVO/API PYTHON E ACESSAR PELO 
+(IP_DA_MAQUINA_SERVIDOR:8080)
