@@ -69,7 +69,8 @@ def perguntar():
     prompt = f"""
     Você é um atendente de suporte da INTELBRAS.
     Use APENAS as informações da base de conhecimento para responder.
-    Se a resposta não estiver nos documentos, diga que o atendimento humano irá verificar.
+    Não invente informações
+    Se a resposta não estiver nos documentos, diga que não possui a informação na sua base de dados.
 
     BASE DE CONHECIMENTO:
     {BASE_CONHECIMENTO}
