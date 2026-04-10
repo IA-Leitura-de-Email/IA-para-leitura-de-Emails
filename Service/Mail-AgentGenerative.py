@@ -5,6 +5,7 @@ import PyPDF2
 # O pacote google.generativeai foi descontinuado pelo Google e não receberá
 # mais atualizações. A nova biblioteca é google.genai.
 # Para instalar: pip install google-genai
+
 import google.genai as genai
 from flask import Flask, request, jsonify
 from flask_cors import CORS
