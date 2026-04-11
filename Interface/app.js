@@ -58,7 +58,7 @@ async function enviar() {
     const t2 = setTimeout(() => advance(3), 1600);
 
     try {
-        const res  = await fetch('http://127.0.0.1:5000/perguntar', {
+        const res  = await fetch('http://10.1.31.107:5000/perguntar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
